@@ -32,3 +32,4 @@
   - provides access to the Internet for EC2 instances in private subnets
   - prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway
   - NAT Gateway must be in a **public subnet**
+  - when creating a NGW, you have to attach an elastic IP to it
