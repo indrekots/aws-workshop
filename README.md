@@ -109,7 +109,7 @@ Traffic to port 22 from all sources should be allowed.
 
 ![List of inbound rules for NACL](inbound-nacl.png)
 
-In outbound rules, all TCP traffic to any port should be allowed.
+In outbound rules, all TCP traffic to ephemeral ports (1024-65535) should be allowed.
 
 ![List of outbound rules for NACL](outbound-nacl.png)
 
@@ -149,4 +149,13 @@ It will take a bit of time for the instance to be ready.
 Once ready, in EC2 dashboard, list your instances and connect to your bastion host by clicking *Connect*.
 You'll see instructions on how to SSH into the bastion host using the `pem` file you downloaded previously.
 If security groups and network access control lists have been configured correctly, you should be able to successfully establish an SSH session.
+
+```
+       __|  __|_  )
+       _|  (     /   Amazon Linux AMI
+      ___|\___|___|
+
+https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
+```
+
 If the connection hangs, it could be that there's an issue with NACLs or security groups.
