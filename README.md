@@ -99,3 +99,11 @@ Name them based on the subnet, e.g. `<your-name>-dmz-nacl`, `<your-name>-app-nac
 Place them in your VPC.
 Associate NACLs with your subnets.
 For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
+
+### Security Groups
+
+In AWS VPC dashboard, select *Security Groups*.
+Create three security groups.
+The first one is going to be used for the bastion host.
+Second and third groups are going to house app and DB servers respectively.
+Name your security groups (e.g. `<your-name>-app-sc`), add a description and place them into your VPC.
