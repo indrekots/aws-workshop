@@ -1,5 +1,7 @@
 # AWS Workshop
 
+![AWS workshop cover image](cover.jpg)
+
 1. Create VPC (choose network CIDR)
 2. Attach Internet Gateway to VPC to get access to the outside world and outside could access you
   - one IGW can be attached to a VPC
