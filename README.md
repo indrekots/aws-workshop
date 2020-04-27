@@ -90,3 +90,12 @@ Finally, associate route tables with subnets.
 Select `<your-name>-rt-igw` route table and edit its subnet associations.
 Associate it with both of your DMZ subnets.
 For `<your-name>-rt-ngw`, associate it with all other subnets.
+
+### Network Access Control Lists
+
+In AWS VPC dashboard, select *Network ACLs*.
+Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
+Name them based on the subnet, e.g. `<your-name>-dmz-nacl`, `<your-name>-app-nacl` etc.
+Place them in your VPC.
+Associate NACLs with your subnets.
+For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
