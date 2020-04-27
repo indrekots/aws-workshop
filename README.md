@@ -43,11 +43,19 @@
 
 ### 1. VPC
 
-In AWS VPC console, create a new VPC. Name it `<your-name>-vpc` so it's distinguishable from others. Select IPv4 CIDR block, e.g. `10.10.0.0/16`.
+In AWS VPC dashboard, create a new VPC. Name it `<your-name>-vpc` so it's distinguishable from others.
+Select IPv4 CIDR block, e.g. `10.10.0.0/16`.
 
-### 2. Subnets
+### 2. Internet Gateway
 
-In AWS VPC console, select subnet tab and create 6 subnets. Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
+In AWS VPC dashboard select the *Internet Gateway* menu option and create a new Internet Gateway.
+Name it `<your-name>-igw`.
+Attach it to your recently created VPC.
+
+### 3. Subnets
+
+In AWS VPC dashboard, select subnet tab and create 6 subnets.
+Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
 
 * created subnets should be in your newly created VPC
 * use your own scheme for allocating an IPv4 CIDR block for each subnet, e.g. `10.10.1.0/24` for `<your-name>-dmz-1` and `10.10.2.0/24` for `<your-name>-dmz-2`
@@ -55,3 +63,30 @@ In AWS VPC console, select subnet tab and create 6 subnets. Use a naming convent
 * create 2 subnets for applications, place them in different availability zones
 * create 2 subnets for databases, place them in different availability zones
 * a region can have several availability zones, place 3 subnets in `az-1` and the rest in `az-2`
+
+### NAT Gateway
+
+In AWS VPC dashboard, select *NAT Gateways* menu option and create a new NAT Gateway.
+
+* place the NAT gateway into one of your DMZ subnets
+* allocate a new elastic IP address for the NAT gateway
+
+### Route tables
+
+In AWS VPC dashboard, select *Route Tables*.
+We're going to create two route tables.
+The first one has a route to the Internet Gateway, the other one has a route the NAT Gateway.
+
+Create a route table and name it `<your-name>-rt-igw`.
+Place it in your VPC.
+It has a _local_ route created for you.
+For all other traffic (i.e. `0.0.0.0/0`), add a route to the internet gateway.
+
+Then, create another route table and name it `<your-name>-rt-ngw`.
+Place it in your VPC.
+Edit its routes and add a route to the NAT gateway.
+
+Finally, associate route tables with subnets.
+Select `<your-name>-rt-igw` route table and edit its subnet associations.
+Associate it with both of your DMZ subnets.
+For `<your-name>-rt-ngw`, associate it with all other subnets.
