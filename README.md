@@ -39,7 +39,7 @@
   - when creating a NGW, you have to attach an elastic IP to it
 
 
-  ## Steps
+## Steps
 
 ### 1. VPC
 
@@ -100,6 +100,19 @@ Place them in your VPC.
 Associate NACLs with your subnets.
 For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
 
+Inbound/outbound rules for NACLs are stateless.
+Meaning that for an inbound rule, a matching outbound rule must be created.
+Otherwise, traffic can only enter a subnet but can never exit it.
+
+Edit inbound/outbound rules for the `dmz` NACL so that SSH access could be allowed.
+Traffic to port 22 from all sources should be allowed.
+
+![List of inbound rules for NACL](inbound-nacl.png)
+
+In outbound rules, all TCP traffic to any port should be allowed.
+
+![List of outbound rules for NACL](outbound-nacl.png)
+
 ### Security Groups
 
 In AWS VPC dashboard, select *Security Groups*.
@@ -107,3 +120,29 @@ Create three security groups.
 The first one is going to be used for the bastion host.
 Second and third groups are going to house app and DB servers respectively.
 Name your security groups (e.g. `<your-name>-app-sc`), add a description and place them into your VPC.
+
+Configure the security group that's responsible for the bastion host.
+Edit its inbound rules to only allow access to port 22 (SSH) from all sources.
+
+### Bastion host
+
+In AWS EC2 dashboard, launch a new instance for the bastion host.
+Pick Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type (it's free tier eligible).
+Then click *Configure Instance Details*.
+Place the instance in your VPC and select your `dmz-1` subnet.
+Also, enable auto-assignment of public IP.
+Leave all other options as is.
+Click *next* until it's time to configure a security group.
+Pick your `dmz-sc` for the security group.
+Finally, review and launch the instance.
+
+AWS will ask you to pick a key pair that's used to access the instance.
+Crate a new key pair, add a name and then download it.
+A `*.pem` file will be downloaded.
+Once that's done, launch the instance.
+It will take a bit of time for the instance to be ready.
+
+Once ready, in EC2 dashboard, list your instances and connect to your bastion host by clicking *Connect*.
+You'll see instructions on how to SSH into the bastion host using the `pem` file you downloaded previously.
+If security groups and network access control lists have been configured correctly, you should be able to successfully establish an SSH session.
+If the connection hangs, it could be that there's an issue with NACLs or security groups.
