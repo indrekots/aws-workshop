@@ -119,10 +119,14 @@ In AWS VPC dashboard, select *Security Groups*.
 Create three security groups.
 The first one is going to be used for the bastion host.
 Second and third groups are going to house app and DB servers respectively.
-Name your security groups (e.g. `<your-name>-app-sc`), add a description and place them into your VPC.
+Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
 Configure the security group that's responsible for the bastion host.
 Edit its inbound rules to only allow access to port 22 (SSH) from all sources.
+Compared to NACLs, security groups are stateful.
+The traffic that's allowed to enter a security group is always allowed to leave it as well.
+
+![List of security group rules for DMZ group](sg-rules.png)
 
 ### Bastion host
 
