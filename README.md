@@ -107,11 +107,15 @@ Otherwise, traffic can only enter a subnet but can never exit it.
 Edit inbound/outbound rules for the `dmz` NACL so that SSH access could be allowed.
 Traffic to port 22 from all sources should be allowed.
 
+// outbound rules for ssh access to app and db subnets
+
 ![List of inbound rules for NACL](inbound-nacl.png)
 
 In outbound rules, all TCP traffic to ephemeral ports (1024-65535) should be allowed.
 
 ![List of outbound rules for NACL](outbound-nacl.png)
+
+// network diagram needed
 
 ### Security Groups
 
@@ -127,6 +131,11 @@ Compared to NACLs, security groups are stateful.
 The traffic that's allowed to enter a security group is always allowed to leave it as well.
 
 ![List of security group rules for DMZ group](sg-rules.png)
+
+For the app security group, allow SSH (port 22) from bastion host subnet and HTTP (port 80) traffic from all sources.
+Additionally, since we wish to install software on application servers, let's allow them to connect to the outside world via HTTP/S so they could receive packages and updates.
+
+// example image
 
 ### Bastion host
 
@@ -159,3 +168,62 @@ https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
 ```
 
 If the connection hangs, it could be that there's an issue with NACLs or security groups.
+
+### Application servers
+
+In AWS EC2 dashboard, create a autoscaling *launch configuration* that's used by the Auto Scaling Group to create new instnaces.
+Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type.
+Click next, and configure name and some advanced details.
+Set the name to `<your-name>-asg-lc`.
+Copy the following to the *User Data* text field.
+
+```
+#!/bin/bash
+yum update -y
+yum install -y httpd
+service httpd start
+```
+
+This script is executed when the instance starts.
+It will install the Apache webserver.
+Finally, do not assign a public IP address to any instances.
+
+Click next until you can configure security groups.
+Select `<your-name>-app-sg` and finish creating the launch configuration.
+Use the previously created keypair when asked to provide one.
+
+Next, let's create an auto scaling group based on the existing launch configuration.
+Set the name (e.g. `<your-name>-asg`), pick your VPC, set the initial group size to 2 and then select subnets dedicated to application servers (i.e. `<your-name>-app-1` and `<your-name-app-2>`).
+Click next to configure scaling policies.
+Keep the group at its initial size for now.
+Click *Review* and finish creating the auto scaling group.
+It takes a bit of time until the desired instances are created.
+Later we'll use load balancers to create access to the web servers.
+
+Once the instances have been created, let's try to SSH into them via the bastion host.
+The same keypair is used for all EC2 instances.
+In order to access instances in your VPC via the bastion host, you must enable SSH key forwarding.
+
+Start an ssh agent
+```
+ssh-agent bash
+```
+
+Add your key
+```
+ssh-add /path/to/your/keypair.pem
+```
+
+SSH into your bastion host
+
+```
+ssh -A ec2-user@<bastion-host-ip>
+```
+
+From there, SSH into one of the web servers.
+You can find the host name and IP address from EC2 dasboard.
+If you have trouble connecting to web servers, have a look at your NACL and security group settings.
+
+Once SSH'd into a web server, let's modify the default page that's served.
+
+// TODO: modify index.html
