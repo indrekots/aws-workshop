@@ -137,6 +137,10 @@ Additionally, since we wish to install software on application servers, let's al
 
 // example image
 
+Create a security group for an application load balancer that we will create later on.
+Name it (e.g. `<your-name>-lb-sg`) and place it into your VPC.
+Allow incoming traffic from all sources to port 80.
+
 ### Bastion host
 
 In AWS EC2 dashboard, launch a new instance for the bastion host.
@@ -182,6 +186,7 @@ Copy the following to the *User Data* text field.
 yum update -y
 yum install -y httpd
 service httpd start
+echo "<h1>Hello from $HOSTNAME</h1>" > /var/www/html/index.html
 ```
 
 This script is executed when the instance starts.
@@ -224,6 +229,36 @@ From there, SSH into one of the web servers.
 You can find the host name and IP address from EC2 dasboard.
 If you have trouble connecting to web servers, have a look at your NACL and security group settings.
 
-Once SSH'd into a web server, let's modify the default page that's served.
+### Target groups and load Balancing
 
-// TODO: modify index.html
+Create a new target group.
+This specifies the *targets* our load balancer should direct traffic to.
+Specify the name (e.g. `<your-name>-tg`), select your VPC and use HTTP for the protocol.
+Leave everything else as is.
+At the moment, the target group is empty.
+It hasn't got any associated EC2 instances yet.
+We could add them manually, but since our applications are in an auto scaling group, we would like to avoid manual work.
+New instances in an auto scaling group are created and removed automatically.
+
+Open your `<your-name>-asg`, edit it, and attach your existing target group to it.
+This registers all targets in the auto scaling group with the target group.
+View your target group again.
+After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
+
+Next, in AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
+Add a name (e.g. `<your-name>-app-lb`) and set the scheme to internet-facing.
+Leave the listeners as is.
+For availability zones, select your VPC and enable it for both availability zones.
+Select a *public* subnet per availability zone. (check how this is done in TBL).
+Click next until you can configure a security group.
+Select your existing `<your-name>-lb-sg` security group.
+Finally, click next, select a target group where to route traffic to and finalize the creation of the load balancer.
+It takes a bit of time for the provisioning to finish.
+Once that's done, get the URL of the load balancer and try to access your web servers.
+
+> **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
+> It supports for host and path based routing.
+> It can also route to different applications on a single EC2 instance based on port.
+>
+> **Network load balancer** works on layer 4 of the OSI model.
+> More performant than application LB.
