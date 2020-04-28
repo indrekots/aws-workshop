@@ -1,5 +1,21 @@
 ![AWS workshop cover image](cover.jpg)
 
+This workshop covers the following topics
+
+1. The creation of a new VPC
+2. Internet Gateway
+3. Subnets
+4. NAT Gateways
+5. Route Tables
+6. Network Access Control Lists
+7. Security Groups
+8. EC2 and creation of new instances
+9. Bastion host
+10. Autoscaling groups
+11. Elastic Load Balancers
+
+The following is a high level architecture diagram of the end result we're going to build.
+
 ![Architecture diagram of what's going to be built](aws-workshop-diagram.png)
 An interactive diagram can be found [here](https://app.cloudcraft.co/view/005b8cfd-95f7-4d19-81a0-e8da1c2d4c63?key=jWz8R9QefwBe7mPq3kOORA).
 
@@ -138,8 +154,6 @@ The following is a list of outbound allow rules with their purpose.
 Although we created a subnet for databases, in this workshop we're not going to actually place any instances in that subnet.
 Therefore we can skip creating the needed NACL rules.
 
-// network diagram needed
-
 ## 7. Security Groups
 
 Security Groups are used to control traffic on the instance level.
@@ -210,9 +224,9 @@ https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
 
 If the connection hangs, it could be that there's an issue with NACLs or security groups.
 
-## 9 Application servers
+## 9. Application servers
 
-In AWS EC2 dashboard, create a autoscaling *launch configuration* that's used by the Auto Scaling Group to create new instnaces.
+In AWS EC2 dashboard, create a autoscaling *launch configuration* that's used by the Auto Scaling Group to create new instances.
 Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type.
 Click next, and configure name and some advanced details.
 Set the name to `<your-name>-asg-lc`.
@@ -291,7 +305,6 @@ Click next until you can configure a security group.
 Select your existing `<your-name>-lb-sg` security group.
 Finally, click next, select a target group where to route traffic to and finalize the creation of the load balancer.
 It takes a bit of time for the provisioning to finish.
-Once that's done, get the URL of the load balancer and try to access your web servers.
 
 > **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
 > It supports for host and path based routing.
@@ -299,3 +312,8 @@ Once that's done, get the URL of the load balancer and try to access your web se
 >
 > **Network load balancer** works on layer 4 of the OSI model.
 > More performant than application LB.
+
+Once the load balancer has been created, find its URL and try to access your web servers.
+If everything is configured correctly, you should receive an HTTP response similar to the following image.
+
+![Example response page from app servers](hello-from.png)
