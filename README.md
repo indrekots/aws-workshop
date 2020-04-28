@@ -69,24 +69,74 @@ In AWS VPC dashboard, select *Network ACLs*.
 Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
 Name them based on the subnet, e.g. `<your-name>-dmz-nacl`, `<your-name>-app-nacl` etc.
 Place them in your VPC.
-Associate NACLs with your subnets.
+Associate NACLs with their respective subnets.
 For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
 
 Inbound/outbound rules for NACLs are stateless.
-Meaning that for an inbound rule, a matching outbound rule must be created.
+This means that for an inbound rule, a matching outbound rule must be created.
 Otherwise, traffic can only enter a subnet but can never exit it.
 Rules are evaluated in the *rule #* order.
 
-Edit inbound/outbound rules for the `dmz` NACL so that SSH access could be allowed.
-Traffic to port 22 from all sources should be allowed.
+### 6.1 DMZ subnet NACL rules
 
-// outbound rules for ssh access to app and db subnets
+Edit inbound/outbound rules for the `dmz` NACL.
+The use cases we want to support are:
 
-![List of inbound rules for NACL](inbound-nacl.png)
+* SSH access to bastion host
+* app server access to NAT Gateway so they could access the outside world
+* incoming HTTP traffic from elastic load balancer
 
-In outbound rules, all TCP traffic to ephemeral ports (1024-65535) should be allowed.
+The following is a list of inbound allow rules with their purpose.
 
-![List of outbound rules for NACL](outbound-nacl.png)
+| Type            | Protocol | Port Range   | Source        | Description                                                                              |
+|-----------------|----------|--------------|---------------|------------------------------------------------------------------------------------------|
+| SSH             | TCP      | 22           | 0.0.0.0/0     | Allow SSH access from any source. We want to access our bastion host via SSH             |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow HTTP traffic to return                                                             |
+| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow incoming HTTP connections from ELB                                                 |
+| HTTPS           | TCP      | 443          | 10.10.21.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
+| HTTPS           | TCP      | 443          | 10.10.22.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
+
+The following is a list of outbound allow rules with their purpose.
+
+| Type            | Protocol | Port Range   | Source        | Description                            |
+|-----------------|----------|--------------|---------------|----------------------------------------|
+| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow client return traffic            |
+| SSH             | TCP      | 22           | 10.10.21.0/24 | Allow SSH access to app servers        |
+| SSH             | TCP      | 22           | 10.10.22.0/24 | Allow SSH access to app servers        |
+| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow HTTP traffic to exit the subnet  |
+| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow HTTPS traffic to exit the subnet |
+
+### 6.2 App subnet NACL rules
+
+Edit inbound/outbound rules for the `app` NACL.
+The use cases we want to support are:
+
+* SSH access from bastion host
+* app server access to NAT Gateway so they could access the outside world and download packages
+* Incoming HTTP traffic from ELB via `dmz` subnet
+
+The following is a list of inbound allow rules with their purpose.
+
+| Type            | Protocol | Port Range   | Source       | Description                           |
+|-----------------|----------|--------------|--------------|---------------------------------------|
+| SSH             | TCP      | 22           | 10.10.1.0/24 | Allow SSH access from bastion host    |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0    | Allow returning HTTP/S traffic        |
+| HTTP            | TCP      | 80           | 10.10.1.0/24 | Allow incoming HTTP traffic from DMZ  |
+| HTTP            | TCP      | 80           | 10.10.2.0/24 | Allow HTTP traffic to exit the subnet |
+
+The following is a list of outbound allow rules with their purpose.
+
+| Type            | Protocol | Port Range   | Source       | Description                                                            |
+|-----------------|----------|--------------|--------------|------------------------------------------------------------------------|
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24 | Allow client return traffic to DMZ                                     |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.2.0/24 | Allow client return traffic to DMZ                                     |
+| HTTP            | TCP      | 80           | 0.0.0.0/0    | Allow outbound HTTP traffic (needed to download updates and packages)  |
+| HTTPS           | TCP      | 443          | 0.0.0.0/0    | Allow outbound HTTPS traffic (needed to download updates and packages) |
+
+### 6.3 DB subnet NACL rules
+
+Although we created a subnet for databases, in this workshop we're not going to actually place any instances in that subnet.
+Therefore we can skip creating the needed NACL rules.
 
 // network diagram needed
 
