@@ -1,6 +1,5 @@
 ![AWS workshop cover image](cover.jpg)
 
-
 ![Architecture diagram of what's going to be built](aws-workshop-diagram.png)
 An interactive diagram can be found [here](https://app.cloudcraft.co/view/005b8cfd-95f7-4d19-81a0-e8da1c2d4c63?key=jWz8R9QefwBe7mPq3kOORA).
 
@@ -39,8 +38,8 @@ NAT Gateway must be in a **public subnet**
 
 In AWS VPC dashboard, select *NAT Gateways* menu option and create a new NAT Gateway.
 
-  * place the NAT gateway into one of your DMZ subnets
-  * allocate a new elastic IP address for the NAT gateway
+* place the NAT gateway into one of your DMZ subnets
+* allocate a new elastic IP address for the NAT gateway
 
 ## 5. Route tables
 
