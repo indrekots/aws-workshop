@@ -1,58 +1,17 @@
-# AWS Workshop
-
 ![AWS workshop cover image](cover.jpg)
 
-1. Create VPC (choose network CIDR)
-2. Attach Internet Gateway to VPC to get access to the outside world and outside could access you
-  - one IGW can be attached to a VPC
-  - IGW cannot be deattached from a VPC when there are active AWS resources in the VPC (e.g. EC2 instances) 
-  - default VPC already has an IGW
-3. Create a route table
-  - you cannot delete a route table if it has dependencies
-  - default VPC has a _main_ route table
-4. Create subnets
-  - subnet resides in an availability zone
-  - subnets must be associated with a subnet, if you don't do it explicitly, they're associated implicitly with the _main_ route table
-  - **public subnet** is associated with a route table that has a route to an IGW
-  - **private subnet** is associated with a route table that hasn't got a route to an IGW
-  - private subnets can access the Internet when routing traffic through a NAT Gateway
-5. Network Access Control Lists (NACL)
-  - firewall on the subnet level
-  - are stateless, return traffic must be allowed as well, if you have an inbound rule, you must specify an outbound rule as well
-  - rules are evaluated in order, starting with the lowest rule number
-6. Security Group
-  - firewall on the instance level
-  - rules are stateful, return traffic requests are always allowed
-  - no deny rules
-7. Elastic Load Balancing
-  - health checks
-  - application LB, HTTP, HTTPS
-  - path based routing
-8. Autoscaling
-  - works with Cloudwatch metrics, cloudwatch alarm adds a new instance
-9. Bastion host
-  - an EC2 instance in a public subnet, is used as a _point of entry_ to access EC2 instances in private subnets
-10. NAT Gateway
-  - provides access to the Internet for EC2 instances in private subnets
-  - prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway
-  - NAT Gateway must be in a **public subnet**
-  - when creating a NGW, you have to attach an elastic IP to it
-
-
-## Steps
-
-### 1. VPC
+## 1. VPC
 
 In AWS VPC dashboard, create a new VPC. Name it `<your-name>-vpc` so it's distinguishable from others.
 Select IPv4 CIDR block, e.g. `10.10.0.0/16`.
 
-### 2. Internet Gateway
+## 2. Internet Gateway
 
 In AWS VPC dashboard select the *Internet Gateway* menu option and create a new Internet Gateway.
 Name it `<your-name>-igw`.
 Attach it to your recently created VPC.
 
-### 3. Subnets
+## 3. Subnets
 
 In AWS VPC dashboard, select subnet tab and create 6 subnets.
 Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
@@ -64,14 +23,22 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 * create 2 subnets for databases, place them in different availability zones
 * a region can have several availability zones, place 3 subnets in `az-1` and the rest in `az-2`
 
-### NAT Gateway
+> **Public subnet** is associated with a route table that has a route to an IGW.
+> **Private subnet** is associated with a route table that hasn't got a route to an IGW.
+
+## 4. NAT Gateway
+
+NAT Gateways provide access to the Internet for EC2 instances in private subnets.
+prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway
+
+NAT Gateway must be in a **public subnet**
 
 In AWS VPC dashboard, select *NAT Gateways* menu option and create a new NAT Gateway.
 
-* place the NAT gateway into one of your DMZ subnets
-* allocate a new elastic IP address for the NAT gateway
+  * place the NAT gateway into one of your DMZ subnets
+  * allocate a new elastic IP address for the NAT gateway
 
-### Route tables
+## 5. Route tables
 
 In AWS VPC dashboard, select *Route Tables*.
 We're going to create two route tables.
@@ -91,7 +58,9 @@ Select `<your-name>-rt-igw` route table and edit its subnet associations.
 Associate it with both of your DMZ subnets.
 For `<your-name>-rt-ngw`, associate it with all other subnets.
 
-### Network Access Control Lists
+## 6. Network Access Control Lists (NACL)
+
+NACLs are used to control traffic on the subnet level.
 
 In AWS VPC dashboard, select *Network ACLs*.
 Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
@@ -103,6 +72,7 @@ For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1
 Inbound/outbound rules for NACLs are stateless.
 Meaning that for an inbound rule, a matching outbound rule must be created.
 Otherwise, traffic can only enter a subnet but can never exit it.
+Rules are evaluated in the *rule #* order.
 
 Edit inbound/outbound rules for the `dmz` NACL so that SSH access could be allowed.
 Traffic to port 22 from all sources should be allowed.
@@ -117,7 +87,12 @@ In outbound rules, all TCP traffic to ephemeral ports (1024-65535) should be all
 
 // network diagram needed
 
-### Security Groups
+## 7. Security Groups
+
+Security Groups are used to control traffic on the instance level.
+Compared to NACLs, security group rules are stateful.
+There's no need to define a matching outbound rule.
+Also, SGs don't have deny rules.
 
 In AWS VPC dashboard, select *Security Groups*.
 Create three security groups.
@@ -141,9 +116,10 @@ Create a security group for an application load balancer that we will create lat
 Name it (e.g. `<your-name>-lb-sg`) and place it into your VPC.
 Allow incoming traffic from all sources to port 80.
 
-### Bastion host
+## 8. Bastion host
 
 In AWS EC2 dashboard, launch a new instance for the bastion host.
+A bastion host is an EC2 instance in a public subnet that's used as a _point of entry_ to access EC2 instances in private subnets.
 Pick Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type (it's free tier eligible).
 Then click *Configure Instance Details*.
 Place the instance in your VPC and select your `dmz-1` subnet.
@@ -164,8 +140,8 @@ You'll see instructions on how to SSH into the bastion host using the `pem` file
 If security groups and network access control lists have been configured correctly, you should be able to successfully establish an SSH session.
 
 ```
-       __|  __|_  )
-       _|  (     /   Amazon Linux AMI
+      __|  __|_  )
+      _|  (     /   Amazon Linux AMI
       ___|\___|___|
 
 https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
@@ -173,7 +149,7 @@ https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
 
 If the connection hangs, it could be that there's an issue with NACLs or security groups.
 
-### Application servers
+## 9 Application servers
 
 In AWS EC2 dashboard, create a autoscaling *launch configuration* that's used by the Auto Scaling Group to create new instnaces.
 Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type.
@@ -229,7 +205,7 @@ From there, SSH into one of the web servers.
 You can find the host name and IP address from EC2 dasboard.
 If you have trouble connecting to web servers, have a look at your NACL and security group settings.
 
-### Target groups and load Balancing
+## 10. Target groups and load Balancing
 
 Create a new target group.
 This specifies the *targets* our load balancer should direct traffic to.
