@@ -148,26 +148,34 @@ There's no need to define a matching outbound rule.
 Also, SGs don't have deny rules.
 
 In AWS VPC dashboard, select *Security Groups*.
-Create three security groups.
+We're going to create four security groups.
 The first one is going to be used for the bastion host.
 Second and third groups are going to house app and DB servers respectively.
+The fourth one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
+
+### 7.1 Bastion host security group
 
 Configure the security group that's responsible for the bastion host.
 Edit its inbound rules to only allow access to port 22 (SSH) from all sources.
-Compared to NACLs, security groups are stateful.
-The traffic that's allowed to enter a security group is always allowed to leave it as well.
 
 ![List of security group rules for DMZ group](sg-rules.png)
 
-For the app security group, allow SSH (port 22) from bastion host subnet and HTTP (port 80) traffic from all sources.
-Additionally, since we wish to install software on application servers, let's allow them to connect to the outside world via HTTP/S so they could receive packages and updates.
+### 7.2 App server security group
 
-// example image
+For the app security group, allow SSH traffic (port 22) from bastion host security group and HTTP (port 80) traffic from all sources.
 
-Create a security group for an application load balancer that we will create later on.
-Name it (e.g. `<your-name>-lb-sg`) and place it into your VPC.
-Allow incoming traffic from all sources to port 80.
+![List of security group rules for app group](app-sg-rules.png)
+
+### 7.3 DB server security group
+
+Similarly to DB subnet NACLs, we're not going to implement them during this workshop.
+
+### 7.4 ELB security group
+
+Allow all incoming HTTP (port 80) traffic from all sources.
+
+![List of security group rules for lb group](lb-sg-rules.png)
 
 ## 8. Bastion host
 
