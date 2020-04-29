@@ -112,14 +112,18 @@ The following is a list of inbound allow rules with their purpose.
 | HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow incoming HTTP connections from ELB                                                 |
 | HTTPS           | TCP      | 443          | 10.10.21.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
 | HTTPS           | TCP      | 443          | 10.10.22.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
+| HTTPS           | TCP      | 443          | 10.10.31.0/24 | Allow incoming HTTPS connections from DB servers so they could install packages          |
+| HTTPS           | TCP      | 443          | 10.10.32.0/24 | Allow incoming HTTPS connections from DB servers so they could install packages          |
 
 The following is a list of outbound allow rules with their purpose.
 
-| Type            | Protocol | Port Range   | Source        | Description                            |
+| Type            | Protocol | Port Range   | Destination   | Description                            |
 |-----------------|----------|--------------|---------------|----------------------------------------|
 | Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow client return traffic            |
 | SSH             | TCP      | 22           | 10.10.21.0/24 | Allow SSH access to app servers        |
 | SSH             | TCP      | 22           | 10.10.22.0/24 | Allow SSH access to app servers        |
+| SSH             | TCP      | 22           | 10.10.31.0/24 | Allow SSH access to DB servers         |
+| SSH             | TCP      | 22           | 10.10.32.0/24 | Allow SSH access to DB servers         |
 | HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow HTTP traffic to exit the subnet  |
 | HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow HTTPS traffic to exit the subnet |
 
@@ -143,17 +147,41 @@ The following is a list of inbound allow rules with their purpose.
 
 The following is a list of outbound allow rules with their purpose.
 
-| Type            | Protocol | Port Range   | Source       | Description                                                            |
-|-----------------|----------|--------------|--------------|------------------------------------------------------------------------|
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24 | Allow client return traffic to DMZ                                     |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.2.0/24 | Allow client return traffic to DMZ                                     |
-| HTTP            | TCP      | 80           | 0.0.0.0/0    | Allow outbound HTTP traffic (needed to download updates and packages)  |
-| HTTPS           | TCP      | 443          | 0.0.0.0/0    | Allow outbound HTTPS traffic (needed to download updates and packages) |
+| Type            | Protocol | Port Range   | Destination   | Description                                                            |
+|-----------------|----------|--------------|---------------|------------------------------------------------------------------------|
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24  | Allow client return traffic to DMZ                                     |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.2.0/24  | Allow client return traffic to DMZ                                     |
+| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow outbound HTTP traffic (needed to download updates and packages)  |
+| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow outbound HTTPS traffic (needed to download updates and packages) |
+| PostgreSQL      | TCP      | 5432         | 10.10.31.0/24 | Allow DB access to DB subnets                                          |
+| PostgreSQL      | TCP      | 5432         | 10.10.32.0/24 | Allow DB access to DB subnets                                          |
 
 ### 6.3 DB subnet NACL rules
 
-Although we created a subnet for databases, in this workshop we're not going to actually place any instances in that subnet.
-Therefore we can skip creating the needed NACL rules.
+For DB subnet, we want to support the following use cases.
+
+* SSH access to DB servers from `dmz` subnet
+* DB access from `app` subnet
+* DB server access to NAT Gateway so it could download updates and packages
+
+The following is a list of inbound allow rules with their purpose.
+
+| Type            | Protocol | Port Range   | Source        | Description                      |
+|-----------------|----------|--------------|---------------|----------------------------------|
+| SSH             | TCP      | 22           | 10.10.1.0/24  | Allow SSH traffic from DMZ       |
+| PostgreSQL      | TCP      | 5432         | 10.10.21.0/24 | Allow DB access from app subnets |
+| PostgreSQL      | TCP      | 5432         | 10.10.22.0/24 | Allow DB access from app subnets |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow returning HTTP/S traffic   |
+
+The following is a list of outbound allow rules with their purpose.
+
+| Type            | Protocol | Port Range   | Destination   | Description                                                                       |
+|-----------------|----------|--------------|---------------|-----------------------------------------------------------------------------------|
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24  | Allow SSH traffic to return to DMZ                                                |
+| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow HTTPS access to the outside world in order to download packages and updates |
+| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow HTTP access to the outside world in order to download packages and updates  |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.21.0/24 | Allow returning DB traffic to app servers                                         |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.22.0/24 | Allow returning DB traffic to app servers                                         |
 
 ## 7. Security Groups
 
@@ -184,7 +212,10 @@ For the app security group, allow SSH traffic (port 22) from bastion host securi
 
 ### 7.3 DB server security group
 
-Similarly to DB subnet NACLs, we're not going to implement them during this workshop.
+DB servers need to be accessed via SSH (port 22) from bastion host.
+We also want to make sure that app servers can connecto to them on port 5432.
+
+![List of security group rules for DB group](db-sg-rules.png)
 
 ### 7.4 ELB security group
 
@@ -318,3 +349,45 @@ Once the load balancer has been created, find its URL and try to access your web
 If everything is configured correctly, you should receive an HTTP response similar to the following image.
 
 ![Example response page from app servers](hello-from.png)
+
+## 12. Databases
+
+Let's create 2 EC2 instances that are going to be used as database servers.
+In AWS EC2 dashboard, launch a new instance.
+Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type. 
+Click next to configure instance details.
+Select your VPC and place the instance into your `db-1` subnet.
+In advanced details, copy-and-paste the following user data script.
+
+```
+#!/bin/bash
+yum update -y
+yum install -y postgresql-server
+service postgresql initdb
+echo "listen_addresses = '*'" >> /var/lib/pgsql9/data/postgresql.conf
+echo "host all all 0.0.0.0/0 trust" >> /var/lib/pgsql9/data/pg_hba.conf
+service postgresql start
+```
+
+Click next until you can configure security groups.
+Select your existing `db-sg` as the security group.
+Finally, launch the instance. 
+Make sure you select your existing keypair.
+
+Repeat the same procedure but place the second DB instance into `db-2` subnet.
+
+Once instances have been created and provisioned, try to SSH into them via bastion host.
+If you're having trouble connecting, verify that security group rules and NACLs allow SSH connections.
+
+Finally, SSH into your app servers and verify that they can connect to the PostgreSQL server running on DB servers.
+In app servers, run the following to verify whether TCP connection to port `5432` is allowed.
+
+```
+nc -vz <enter DB server IP here> 5432
+```
+
+A successful response would look something like the following
+
+```
+Connection to 10.10.31.96 5432 port [tcp/postgres] succeeded!
+```
