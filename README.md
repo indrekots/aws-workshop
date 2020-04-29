@@ -16,7 +16,7 @@ This workshop covers the following topics
 
 The following is a high level architecture diagram of the end result we're going to build.
 
-![Architecture diagram of what's going to be built](aws-workshop-diagram.png)
+![Architecture diagram of what's going to be built](architecture-diagram.png)
 An interactive diagram can be found [here](https://app.cloudcraft.co/view/005b8cfd-95f7-4d19-81a0-e8da1c2d4c63?key=jWz8R9QefwBe7mPq3kOORA).
 
 ## 1. VPC
