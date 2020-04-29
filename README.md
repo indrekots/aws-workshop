@@ -26,7 +26,7 @@ Select IPv4 CIDR block, e.g. `10.10.0.0/16`.
 
 ## 2. Internet Gateway
 
-In AWS VPC dashboard select the *Internet Gateway* menu option and create a new Internet Gateway.
+In AWS VPC dashboard select the *Internet Gateways* menu option and create a new Internet Gateway.
 Name it `<your-name>-igw`.
 Attach it to your recently created VPC.
 
@@ -47,14 +47,13 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 
 ## 4. NAT Gateway
 
-NAT Gateways provide access to the Internet for EC2 instances in private subnets.
-prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway.
+NAT Gateways prevent anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway, while at the same time providing Internet access to EC2 instances in private subnets.
 NAT Gateway must be in a **public subnet**
 
 In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateway.
 
-* place one NAT gateway into `dmz-1` and the other into `dmz-2` subnet
-* allocate a new elastic IP address for the NAT gateways
+* place the first NAT gateway into `dmz-1` and the other one into `dmz-2` subnet
+* allocate a new elastic IP addresses for the NAT gateways
 
 ## 5. Route tables
 
@@ -68,7 +67,7 @@ It has a _local_ route created for you.
 For all other traffic (i.e. `0.0.0.0/0`), add a route to the internet gateway.
 
 Then, create two more route tables and name them `<your-name>-rt-ngw-1` and `<your-name>-rt-ngw-2`
-Place them in your VPC and add a routes to the NAT gateways.
+Place them in your VPC and add routes to the NAT gateways.
 `rt-ngw-1` should have a route to the NAT gateway that's in subnet `dmz-1`.
 `rt-ngw-2` should have a route to the NAT gateway that's in subnet `dmz-2`.
 
@@ -85,7 +84,7 @@ NACLs are used to control traffic on the subnet level.
 In AWS VPC dashboard, select *Network ACLs*.
 Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
 Name them based on the subnet, e.g. `<your-name>-dmz-nacl`, `<your-name>-app-nacl` etc.
-Place them in your VPC.
+Place them into your VPC.
 Associate NACLs with their respective subnets.
 For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
 
