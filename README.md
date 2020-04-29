@@ -48,8 +48,7 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 ## 4. NAT Gateway
 
 NAT Gateways provide access to the Internet for EC2 instances in private subnets.
-prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway
-
+prevents anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway.
 NAT Gateway must be in a **public subnet**
 
 In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateway.
@@ -60,22 +59,24 @@ In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT G
 ## 5. Route tables
 
 In AWS VPC dashboard, select *Route Tables*.
-We're going to create two route tables.
-The first one has a route to the Internet Gateway, the other one has a route the NAT Gateway.
+We're going to create three route tables.
+The first one has a route to the Internet Gateway, the rest will have a route to the NAT Gateway.
 
 Create a route table and name it `<your-name>-rt-igw`.
 Place it in your VPC.
 It has a _local_ route created for you.
 For all other traffic (i.e. `0.0.0.0/0`), add a route to the internet gateway.
 
-Then, create another route table and name it `<your-name>-rt-ngw`.
-Place it in your VPC.
-Edit its routes and add a route to the NAT gateway.
+Then, create two more route tables and name them `<your-name>-rt-ngw-1` and `<your-name>-rt-ngw-2`
+Place them in your VPC and add a routes to the NAT gateways.
+`rt-ngw-1` should have a route to the NAT gateway that's in subnet `dmz-1`.
+`rt-ngw-2` should have a route to the NAT gateway that's in subnet `dmz-2`.
 
 Finally, associate route tables with subnets.
 Select `<your-name>-rt-igw` route table and edit its subnet associations.
 Associate it with both of your DMZ subnets.
-For `<your-name>-rt-ngw`, associate it with all other subnets.
+For `<your-name>-rt-ngw-1`, associate it with `app-1` and `db-1` subnets.
+`<your-name>-rt-ngw-2` should be associated with `app-2` and `db-2` subnets.
 
 ## 6. Network Access Control Lists (NACL)
 
