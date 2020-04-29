@@ -350,7 +350,7 @@ If everything is configured correctly, you should receive an HTTP response simil
 
 ![Example response page from app servers](hello-from.png)
 
-## 12. Databases
+## 11. Databases
 
 Let's create 2 EC2 instances that are going to be used as database servers.
 In AWS EC2 dashboard, launch a new instance.
