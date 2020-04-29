@@ -52,10 +52,10 @@ prevents anybody form outside of the VPC from initiating a connection with EC2 i
 
 NAT Gateway must be in a **public subnet**
 
-In AWS VPC dashboard, select *NAT Gateways* menu option and create a new NAT Gateway.
+In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateway.
 
-* place the NAT gateway into one of your DMZ subnets
-* allocate a new elastic IP address for the NAT gateway
+* place one NAT gateway into `dmz-1` and the other into `dmz-2` subnet
+* allocate a new elastic IP address for the NAT gateways
 
 ## 5. Route tables
 
