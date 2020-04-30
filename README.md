@@ -224,6 +224,8 @@ We also want to make sure that app servers can connect to them on port 5432.
 
 ### 7.4 ELB security group
 
+Finally, create a security group for a load balancer that we're going to create later.
+Name it `<your-name-lb-sg>`.
 Allow all incoming HTTP (port 80) traffic from all sources.
 
 ![List of security group rules for lb group](lb-sg-rules.png)
