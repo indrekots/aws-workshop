@@ -195,23 +195,30 @@ Second and third groups are going to house app and DB servers respectively.
 The fourth one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
+> :warning: When creating security groups, make sure to place them into your VPC
+
 ### 7.1 Bastion host security group
 
-Configure the security group that's responsible for the bastion host.
+Create a security group that's responsible for the bastion host.
+Name it `<your-name>-dmz-sg`.
 Edit its inbound rules to only allow access to port 22 (SSH) from all sources.
 
 ![List of security group rules for DMZ group](sg-rules.png)
 
 ### 7.2 App server security group
 
-For the app security group, allow SSH traffic (port 22) from bastion host security group and HTTP (port 80) traffic from all sources.
+Create a new security group for your app servers.
+Name it `<your-name>-app-sg`.
+For app servers, we want to allow SSH traffic (port 22) from bastion host security group and HTTP (port 80) traffic from all sources.
 
 ![List of security group rules for app group](app-sg-rules.png)
 
 ### 7.3 DB server security group
 
+Create a security group for DB servers.
+Name it `<your-name>-db-sg`.
 DB servers need to be accessed via SSH (port 22) from bastion host.
-We also want to make sure that app servers can connecto to them on port 5432.
+We also want to make sure that app servers can connect to them on port 5432.
 
 ![List of security group rules for DB group](db-sg-rules.png)
 
