@@ -240,12 +240,13 @@ Place the instance in your VPC and select your `dmz-1` subnet.
 Also, enable auto-assignment of public IP.
 Leave all other options as is.
 Click *next* until it's time to configure a security group.
-Pick your `dmz-sc` for the security group.
+Pick your `dmz-sg` for the security group.
 Finally, review and launch the instance.
 
 AWS will ask you to pick a key pair that's used to access the instance.
 Crate a new key pair, add a name and then download it.
 A `*.pem` file will be downloaded.
+You're going to use that later to SSH into the bastion host.
 Once that's done, launch the instance.
 It will take a bit of time for the instance to be ready.
 
@@ -265,9 +266,9 @@ If the connection hangs, it could be that there's an issue with NACLs or securit
 
 ## 9. Application servers
 
-In AWS EC2 dashboard, create a autoscaling *launch configuration* that's used by the Auto Scaling Group to create new instances.
+In AWS EC2 dashboard, create a new *auto scaling launch configuration*.
 Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type.
-Click next, and configure name and some advanced details.
+Click next, set the name and configure some advanced details.
 Set the name to `<your-name>-asg-lc`.
 Copy the following to the *User Data* text field.
 
@@ -321,7 +322,7 @@ If you have trouble connecting to web servers, have a look at your NACL and secu
 
 ## 10. Target groups and load Balancing
 
-Create a new target group.
+In AWS EC2 dashboard, create a new target group.
 This specifies the *targets* our load balancer should direct traffic to.
 Specify the name (e.g. `<your-name>-tg`), select your VPC and use HTTP for the protocol.
 Leave everything else as is.
@@ -331,7 +332,7 @@ We could add them manually, but since our applications are in an auto scaling gr
 New instances in an auto scaling group are created and removed automatically.
 
 Open your `<your-name>-asg`, edit it, and attach your existing target group to it.
-This registers all targets in the auto scaling group with the target group.
+This registers all instances in the auto scaling group with the target group.
 View your target group again.
 After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
 
@@ -339,13 +340,13 @@ Next, in AWS EC2 dashboard, go to *Load Balancers* and create an Application Loa
 Add a name (e.g. `<your-name>-app-lb`) and set the scheme to internet-facing.
 Leave the listeners as is.
 For availability zones, select your VPC and enable it for both availability zones.
-Select a *public* subnet per availability zone. (check how this is done in TBL).
+Select a *public* subnet per availability zone.
 Click next until you can configure a security group.
 Select your existing `<your-name>-lb-sg` security group.
 Finally, click next, select a target group where to route traffic to and finalize the creation of the load balancer.
 It takes a bit of time for the provisioning to finish.
 
-> **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
+> :information_source: **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
 > It supports for host and path based routing.
 > It can also route to different applications on a single EC2 instance based on port.
 >
@@ -357,9 +358,11 @@ If everything is configured correctly, you should receive an HTTP response simil
 
 ![Example response page from app servers](hello-from.png)
 
+Hit refresh a couple of times and you should see that the response comes from different servers.
+
 ## 11. Databases
 
-Let's create 2 EC2 instances that are going to be used as database servers.
+Let's create two EC2 instances that are going to be used as database servers.
 In AWS EC2 dashboard, launch a new instance.
 Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type. 
 Click next to configure instance details.
@@ -376,12 +379,14 @@ echo "host all all 0.0.0.0/0 trust" >> /var/lib/pgsql9/data/pg_hba.conf
 service postgresql start
 ```
 
+It will download PostgreSQL and configure it to accept connections.
+
 Click next until you can configure security groups.
 Select your existing `db-sg` as the security group.
 Finally, launch the instance. 
 Make sure you select your existing keypair.
 
-Repeat the same procedure but place the second DB instance into `db-2` subnet.
+Repeat the procedure but this time place the second DB instance into `db-2` subnet.
 
 Once instances have been created and provisioned, try to SSH into them via bastion host.
 If you're having trouble connecting, verify that security group rules and NACLs allow SSH connections.
