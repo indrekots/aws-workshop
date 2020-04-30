@@ -1,4 +1,4 @@
-![AWS workshop cover image](cover.jpg)
+![AWS workshop cover image](cover.jpg "Image from https://aws.amazon.com/events/aws-handson-workshop-24/")
 
 This workshop covers the following topics
 
@@ -106,7 +106,7 @@ The following is a list of inbound allow rules with their purpose.
 | Type            | Protocol | Port Range   | Source        | Description                                                                              |
 |-----------------|----------|--------------|---------------|------------------------------------------------------------------------------------------|
 | SSH             | TCP      | 22           | 0.0.0.0/0     | Allow SSH access from any source. We want to access our bastion host via SSH             |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow HTTP traffic to return                                                             |
+| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow client traffic to return                                                           |
 | HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow incoming HTTP connections from ELB                                                 |
 | HTTPS           | TCP      | 443          | 10.10.21.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
 | HTTPS           | TCP      | 443          | 10.10.22.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
