@@ -42,8 +42,7 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 * create 2 subnets for databases, place them in different availability zones
 * a region can have several availability zones, place 3 subnets in `az-1` and the rest in `az-2`
 
-> **Public subnet** is associated with a route table that has a route to an IGW.
-> **Private subnet** is associated with a route table that hasn't got a route to an IGW.
+> :information_source: A **Public subnet** is associated with a route table that has a route to an IGW. A **Private subnet** is associated with a route table that hasn't got a route to an IGW.
 
 ## 4. NAT Gateway
 
