@@ -21,16 +21,22 @@ An interactive diagram can be found [here](https://app.cloudcraft.co/view/005b8c
 
 ## 1. VPC
 
+ [A Virtual Private Cloud (VPC)](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html) is a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network.
+
 In AWS VPC dashboard, create a new VPC. Name it `<your-name>-vpc` so it's distinguishable from others.
 Select IPv4 CIDR block, e.g. `10.10.0.0/16`.
 
 ## 2. Internet Gateway
+
+[An internet gateway (IGW)](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html) is VPC component that allows communication between your VPC and the internet.
 
 In AWS VPC dashboard select the *Internet Gateways* menu option and create a new Internet Gateway.
 Name it `<your-name>-igw`.
 Attach it to your recently created VPC.
 
 ## 3. Subnets
+
+[A subnet](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html) is a range of IP addresses in your VPC. You can create AWS resources, such as EC2 instances, in specific subnets.
 
 In AWS VPC dashboard, select subnet tab and create 6 subnets.
 Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
@@ -42,11 +48,14 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 * create 2 subnets for databases, place them in different availability zones
 * a region can have several availability zones, place 3 subnets in `az-1` and the rest in `az-2`
 
-> :information_source: A **Public subnet** is associated with a route table that has a route to an IGW. A **Private subnet** is associated with a route table that hasn't got a route to an IGW.
+> [!NOTE]
+> A **Public subnet** is associated with a route table that has a route to an IGW. A **Private subnet** is associated with a route table that hasn't got a route to an IGW.
+
 
 ## 4. NAT Gateway
 
-NAT Gateways prevent anybody form outside of the VPC from initiating a connection with EC2 instances that are associated with the NAT Gateway, while at the same time providing Internet access to EC2 instances in private subnets.
+[A NAT gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) is a Network Address Translation (NAT) service.
+NAT gateways are used to enable instances in **private subnets** to initiate connections outside of your VPC while preventing inbound traffic from reaching those instances.
 NAT Gateway must be in a **public subnet**
 
 In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateway.
@@ -55,6 +64,8 @@ In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT G
 * allocate a new elastic IP addresses for the NAT gateways
 
 ## 5. Route tables
+
+[A route table](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html) contains a set of rules, called routes, that determine where network traffic from your subnet or gateway is directed.
 
 In AWS VPC dashboard, select *Route Tables*.
 We're going to create three route tables.
@@ -78,7 +89,7 @@ For `<your-name>-rt-ngw-1`, associate it with `app-1` and `db-1` subnets.
 
 ## 6. Network Access Control Lists (NACL)
 
-NACLs are used to control traffic on the subnet level.
+[Network access control lists](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html) are used to control inbound and outbound traffic on the subnet level.
 
 In AWS VPC dashboard, select *Network ACLs*.
 Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
@@ -93,6 +104,10 @@ Otherwise, traffic can only enter a subnet but can never exit it.
 Rules are evaluated in the *rule #* order.
 
 ### 6.1 DMZ subnet NACL rules
+
+> [!NOTE]  
+> In networking, a DMZ, or Demilitarized Zone, refers to a segmented part of a network that is isolated and positioned between an organization's internal network (often referred to as the "trusted network") and an external network, typically the internet.
+> The purpose of a DMZ is to provide an additional layer of security by placing certain servers and services that require external access in a neutral zone with restricted connectivity.
 
 Edit inbound/outbound rules for the `dmz` NACL.
 The use cases we want to support are:
@@ -181,9 +196,9 @@ The following is a list of outbound allow rules with their purpose.
 | Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.21.0/24 | Allow returning DB traffic to app servers                                         |
 | Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.22.0/24 | Allow returning DB traffic to app servers                                         |
 
-## 7. Security Groups
+## 7. Security Groups (SG)
 
-Security Groups are used to control traffic on the instance level.
+[Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) are used to control traffic on the instance level.
 Compared to NACLs, security group rules are stateful.
 There's no need to define a matching outbound rule.
 Also, SGs don't have deny rules.
@@ -195,7 +210,8 @@ Second and third groups are going to house app and DB servers respectively.
 The fourth one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
-> :warning: When creating security groups, make sure to place them into your VPC
+> [!IMPORTANT]
+> When creating security groups, make sure to place them into your VPC
 
 ### 7.1 Bastion host security group
 
@@ -234,6 +250,11 @@ Allow all incoming HTTP (port 80) traffic from all sources.
 
 In AWS EC2 dashboard, launch a new instance for the bastion host.
 A bastion host is an EC2 instance in a public subnet that's used as a _point of entry_ to access EC2 instances in private subnets.
+
+> [!NOTE]  
+> A bastion host, also known as a jump host, is a specially configured and secured server that is positioned on the perimeter of a network, often within a Demilitarized Zone (DMZ).
+> The primary purpose of a bastion host is to provide secure access to internal network resources from external networks, such as the internet.
+
 Pick Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type (it's free tier eligible).
 Then click *Configure Instance Details*.
 Place the instance in your VPC and select your `dmz-1` subnet.
@@ -301,24 +322,28 @@ The same keypair is used for all EC2 instances.
 In order to access instances in your VPC via the bastion host, you must enable SSH key forwarding.
 
 Start an ssh agent
-```
+
+```bash
 ssh-agent bash
 ```
 
 Add your key
-```
+
+```bash
 ssh-add /path/to/your/keypair.pem
 ```
 
 SSH into your bastion host
 
-```
+```bash
 ssh -A ec2-user@<bastion-host-ip>
 ```
 
 From there, SSH into one of the web servers.
 You can find the host name and IP address from EC2 dasboard.
-If you have trouble connecting to web servers, have a look at your NACL and security group settings.
+
+> [!TIP]
+> If you have trouble connecting to web servers, have a look at your NACL and security group settings.
 
 ## 10. Target groups and load Balancing
 
