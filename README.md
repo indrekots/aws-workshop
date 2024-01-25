@@ -63,6 +63,9 @@ In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT G
 * place the first NAT gateway into `dmz-1` and the other one into `dmz-2` subnet
 * allocate a new elastic IP addresses for the NAT gateways
 
+> [!NOTE]
+> It can take some time for the NAT gateways to be available
+
 ## 5. Route tables
 
 [A route table](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html) contains a set of rules, called routes, that determine where network traffic from your subnet or gateway is directed.
@@ -209,9 +212,6 @@ The first one is going to be used for the bastion host.
 Second and third groups are going to house app and DB servers respectively.
 The fourth one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
-
-> [!IMPORTANT]
-> When creating security groups, make sure to place them into your VPC
 
 ### 7.1 Bastion host security group
 
