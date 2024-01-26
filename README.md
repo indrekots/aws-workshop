@@ -287,10 +287,18 @@ If the connection hangs, it could be that there's an issue with NACLs or securit
 
 ## 9. Application servers
 
-In AWS EC2 dashboard, create a new *auto scaling launch configuration*.
-Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type.
-Click next, set the name and configure some advanced details.
-Set the name to `<your-name>-asg-lc`.
+The following section is about creating new EC2 instances that will be serving web traffic.
+
+### 9.1 Launch Template
+
+[Launch template](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html) specifies EC2 instance configuration information.
+Auto scaling group will use it to create new EC2 instances.
+
+Create a new launch template.
+Name it `<your-name>-lt`.
+Use Amazon Linux 2023 AMI and `t2.micro` as the instance type.
+Attach the `app` security group to the launch template.
+
 Copy the following to the *User Data* text field.
 
 ```
@@ -303,47 +311,23 @@ echo "<h1>Hello from $HOSTNAME</h1>" > /var/www/html/index.html
 
 This script is executed when the instance starts.
 It will install the Apache webserver.
-Finally, do not assign a public IP address to any instances.
 
-Click next until you can configure security groups.
-Select `<your-name>-app-sg` and finish creating the launch configuration.
-Use the previously created keypair when asked to provide one.
+### 9.2 Auto Scaling Group
 
-Next, let's create an auto scaling group based on the existing launch configuration.
-Set the name (e.g. `<your-name>-asg`), pick your VPC, set the initial group size to 2 and then select subnets dedicated to application servers (i.e. `<your-name>-app-1` and `<your-name-app-2>`).
-Click next to configure scaling policies.
-Keep the group at its initial size for now.
-Click *Review* and finish creating the auto scaling group.
-It takes a bit of time until the desired instances are created.
-Later we'll use load balancers to create access to the web servers.
+[An Auto Scaling group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html) contains a collection of EC2 instances that are treated as a logical grouping for the purposes of automatic scaling and management
 
-Once the instances have been created, let's try to SSH into them via the bastion host.
-The same keypair is used for all EC2 instances.
-In order to access instances in your VPC via the bastion host, you must enable SSH key forwarding.
+In the EC2 dashboard, create a new auto scaling group.
+Name it `<your-namee>-asg`.
+Next, select the launch template that you created in the previous step.
+In the next section, configure the auto scaling group to use your VPC.
+To ensure that EC2 instances are created in the correct subnets, select the `app-1` and `app-2` subnets.
 
-Start an ssh agent
+In the *Configure advanced options* leave everything as is.
+In *group size and scaling* set the min and desired capacity to 2.
+Click next until you can create the auto scaling group.
 
-```bash
-ssh-agent bash
-```
-
-Add your key
-
-```bash
-ssh-add /path/to/your/keypair.pem
-```
-
-SSH into your bastion host
-
-```bash
-ssh -A ec2-user@<bastion-host-ip>
-```
-
-From there, SSH into one of the web servers.
-You can find the host name and IP address from EC2 dasboard.
-
-> [!TIP]
-> If you have trouble connecting to web servers, have a look at your NACL and security group settings.
+Once the auto scaling group is created, AWS will start creating new EC2 instances.
+View the *Instances* section in the EC2 dashboard to see the status of the newly created EC2 instances.
 
 ## 10. Target groups and load Balancing
 
