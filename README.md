@@ -329,12 +329,18 @@ Click next until you can create the auto scaling group.
 Once the auto scaling group is created, AWS will start creating new EC2 instances.
 View the *Instances* section in the EC2 dashboard to see the status of the newly created EC2 instances.
 
-## 10. Target groups and load Balancing
+## 10. Load Balancing
+
+### 10.1 Target Group
+
+[Target groups](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) route requests to individual registered targets, such as EC2 instances, using the protocol and port number that you specify.
+In our case, it specifies the *targets* our load balancer should direct traffic to.
 
 In AWS EC2 dashboard, create a new target group.
-This specifies the *targets* our load balancer should direct traffic to.
+Set the target type to *instances*.
 Specify the name (e.g. `<your-name>-tg`), select your VPC and use HTTP for the protocol.
 Leave everything else as is.
+
 At the moment, the target group is empty.
 It hasn't got any associated EC2 instances yet.
 We could add them manually, but since our applications are in an auto scaling group, we would like to avoid manual work.
@@ -345,10 +351,12 @@ This registers all instances in the auto scaling group with the target group.
 View your target group again.
 After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
 
-Next, in AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
+### Load Balancer
+
+AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
 Add a name (e.g. `<your-name>-app-lb`) and set the scheme to internet-facing.
 Leave the listeners as is.
-For availability zones, select your VPC and enable it for both availability zones.
+In Network mapping, select your VPC and enable it for both availability zones.
 Select a *public* subnet per availability zone.
 Click next until you can configure a security group.
 Select your existing `<your-name>-lb-sg` security group.
