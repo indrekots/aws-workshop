@@ -341,34 +341,40 @@ Set the target type to *instances*.
 Specify the name (e.g. `<your-name>-tg`), select your VPC and use HTTP for the protocol.
 Leave everything else as is.
 
-At the moment, the target group is empty.
+At the moment, the target group you created is empty.
 It hasn't got any associated EC2 instances yet.
 We could add them manually, but since our applications are in an auto scaling group, we would like to avoid manual work.
 New instances in an auto scaling group are created and removed automatically.
 
-Open your `<your-name>-asg`, edit it, and attach your existing target group to it.
+Open the auto scaling group `<your-name>-asg` and edit its load balancing configuration.
+Tick the *Application, Network or Gateway Load Balancer target groups* checkbox and from the dropdown select your target group.
 This registers all instances in the auto scaling group with the target group.
 View your target group again.
 After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
 
-### Load Balancer
+### 10.2 Load Balancer
 
-AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
+In the AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
 Add a name (e.g. `<your-name>-app-lb`) and set the scheme to internet-facing.
 Leave the listeners as is.
 In Network mapping, select your VPC and enable it for both availability zones.
 Select a *public* subnet per availability zone.
-Click next until you can configure a security group.
-Select your existing `<your-name>-lb-sg` security group.
-Finally, click next, select a target group where to route traffic to and finalize the creation of the load balancer.
-It takes a bit of time for the provisioning to finish.
+In our case, we've created two public subnets — `dmz-1` and `dmz-2`.
+Tick the availability zones the public sunets were created in and select the subnets that should be associated with the load balancer.
 
-> :information_source: **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
-> It supports for host and path based routing.
+In the security group section, select the existing `<your-name>-lb-sg` security group.
+
+In the listeners and rounting section, configure HTTP port 80 to be routed to the target group you created in the previous section.
+
+It takes a bit of time for the provisioning to finish.
+Meanwhile you can move onwards with the next steps.
+
+> [!NOTE]
+> **Application load balancer** works on layer 7 of the OSI model (HTTP/HTTPS).
+> It supports host and path based routing.
 > It can also route to different applications on a single EC2 instance based on port.
 >
-> **Network load balancer** works on layer 4 of the OSI model.
-> More performant than application LB.
+> **Network load balancer** works on layer 4 of the OSI model and is more performant than application LB.
 
 Once the load balancer has been created, find its URL and try to access your web servers.
 If everything is configured correctly, you should receive an HTTP response similar to the following image.
