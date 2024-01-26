@@ -352,9 +352,6 @@ This registers all instances in the auto scaling group with the target group.
 View your target group again.
 After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
 
-> [!NOTE]
-> In addition to appearing in the target group, it takes a bit of time for health checks to pass
-
 ### 10.2 Load Balancer
 
 In the AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
