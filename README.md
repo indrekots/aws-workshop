@@ -228,11 +228,11 @@ Create a security group for DB servers.
 Name it `<your-name>-db-sg`.
 Allow incoming traffic on port 5432 from the app security group.
 
-## 9. Application servers
+## 8. Application servers
 
 The following section is about creating new EC2 instances that will be serving web traffic.
 
-### 9.1 Launch Template
+### 8.1 Launch Template
 
 [Launch template](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html) specifies EC2 instance configuration information.
 Auto scaling group will use it to create new EC2 instances.
@@ -255,12 +255,12 @@ echo "<h1>Hello from $HOSTNAME</h1>" > /var/www/html/index.html
 This script is executed when the instance starts.
 It will install the Apache webserver.
 
-### 9.2 Auto Scaling Group
+### 8.2 Auto Scaling Group
 
 [An Auto Scaling group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html) contains a collection of EC2 instances that are treated as a logical grouping for the purposes of automatic scaling and management
 
 In the EC2 dashboard, create a new auto scaling group.
-Name it `<your-namee>-asg`.
+Name it `<your-name>-asg`.
 Next, select the launch template that you created in the previous step.
 In the next section, configure the auto scaling group to use your VPC.
 To ensure that EC2 instances are created in the correct subnets, select the `app-1` and `app-2` subnets.
@@ -272,9 +272,9 @@ Click next until you can create the auto scaling group.
 Once the auto scaling group is created, AWS will start creating new EC2 instances.
 View the *Instances* section in the EC2 dashboard to see the status of the newly created EC2 instances.
 
-## 10. Load Balancing
+## 9. Load Balancing
 
-### 10.1 Target Group
+### 9.1 Target Group
 
 [Target groups](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) route requests to individual registered targets, such as EC2 instances, using the protocol and port number that you specify.
 In our case, it specifies the *targets* our load balancer should direct traffic to.
@@ -295,7 +295,7 @@ This registers all instances in the auto scaling group with the target group.
 View your target group again.
 After a bit of time, you should see all of your EC2 instances in your auto scaling group as targets in the target group.
 
-### 10.2 Load Balancer
+### 9.2 Load Balancer
 
 In the AWS EC2 dashboard, go to *Load Balancers* and create an Application Load Balancer.
 Add a name (e.g. `<your-name>-app-lb`) and set the scheme to internet-facing.
@@ -326,7 +326,7 @@ If everything is configured correctly, you should receive an HTTP response simil
 
 Hit refresh a couple of times and you should see that the response comes from different servers.
 
-## 11. Databases
+## 10. Databases
 
 Let's create two EC2 instances that are going to be used as database servers.
 In AWS EC2 dashboard, launch a new instance.
