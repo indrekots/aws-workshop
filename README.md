@@ -10,9 +10,8 @@ This workshop covers the following topics
 6. Network Access Control Lists
 7. Security Groups
 8. EC2 and creation of new instances
-9. Bastion host
-10. Autoscaling groups
-11. Elastic Load Balancers
+9. Autoscaling groups
+10. Elastic Load Balancers
 
 The following is a high level architecture diagram of the end result we're going to build.
 
@@ -38,15 +37,14 @@ Attach it to your recently created VPC.
 
 [A subnet](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html) is a range of IP addresses in your VPC. You can create AWS resources, such as EC2 instances, in specific subnets.
 
-In AWS VPC dashboard, select subnet tab and create 6 subnets.
+In AWS VPC dashboard, select subnet tab and create 7 subnets.
 Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
 
 * created subnets should be in your newly created VPC
 * use your own scheme for allocating an IPv4 CIDR block for each subnet, e.g. `10.10.1.0/24` for `<your-name>-dmz-1` and `10.10.2.0/24` for `<your-name>-dmz-2`
 * create 2 subnets for DMZ, place them in different availability zones
 * create 2 subnets for applications, place them in different availability zones
-* create 2 subnets for databases, place them in different availability zones
-* a region can have several availability zones, place 3 subnets in `az-1` and the rest in `az-2`
+* create 3 subnets for databases, place them in different availability zones
 
 > [!NOTE]
 > A **Public subnet** is associated with a route table that has a route to an IGW. A **Private subnet** is associated with a route table that hasn't got a route to an IGW.
