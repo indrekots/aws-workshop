@@ -242,6 +242,7 @@ Name it `<your-name>-lt`.
 Use Amazon Linux 2023 AMI and `t2.micro` as the instance type.
 Attach the `app` security group to the launch template.
 
+Select the SSM IAM profile.
 Copy the following to the *User Data* text field.
 
 ```
@@ -328,44 +329,43 @@ Hit refresh a couple of times and you should see that the response comes from di
 
 ## 10. Databases
 
-Let's create two EC2 instances that are going to be used as database servers.
-In AWS EC2 dashboard, launch a new instance.
-Use Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type. 
-Click next to configure instance details.
-Select your VPC and place the instance into your `db-1` subnet.
-In advanced details, copy-and-paste the following user data script.
+We're going to create a Multi-AZ RDS Postgres cluster.
+First, go to the RDS Dasboard and create a DB subnent group.
+Name it and place it in your VPC.
+Add all of your `db` subnets to the group.
+Finally, create the group.
+
+Create a new database.
+Select standard create and choose Postgresql asn the engine type.
+In Availability and durability, select Multi-AZ DB instance.
+Name your database `<your-name>-db`
+
+For the instance type, select `db.t3.micro`.
+Select the General Purpose SSD (gp2) storage type and allocate 20GB of storage.
+Place the database into your VPC.
+Then select the subnet group you created previously.
+Attach the `db` security group.
+
+Select create database and wait for the provisioning to finish.
+
+Let's simulate DB traffic from the app servers.
+In the EC2 dashboard, select one of your app instances and click connect.
+Use Session Manager to connect to the EC2 instance.
+Then check whether the DB port is accessible from the app servers.
 
 ```
-#!/bin/bash
-yum update -y
-yum install -y postgresql-server
-service postgresql initdb
-echo "listen_addresses = '*'" >> /var/lib/pgsql9/data/postgresql.conf
-echo "host all all 0.0.0.0/0 trust" >> /var/lib/pgsql9/data/pg_hba.conf
-service postgresql start
-```
-
-It will download PostgreSQL and configure it to accept connections.
-
-Click next until you can configure security groups.
-Select your existing `db-sg` as the security group.
-Finally, launch the instance. 
-Make sure you select your existing keypair.
-
-Repeat the procedure but this time place the second DB instance into `db-2` subnet.
-
-Once instances have been created and provisioned, try to SSH into them via bastion host.
-If you're having trouble connecting, verify that security group rules and NACLs allow SSH connections.
-
-Finally, SSH into your app servers and verify that they can connect to the PostgreSQL server running on DB servers.
-In app servers, run the following to verify whether TCP connection to port `5432` is allowed.
-
-```
-nc -vz <enter DB server IP here> 5432
+nc -vz <enter DB server IP or host name> 5432
 ```
 
 A successful response would look something like the following
 
 ```
-Connection to 10.10.31.96 5432 port [tcp/postgres] succeeded!
+Ncat: Connected to 10.10.6.43:5432.
 ```
+
+If `nc` isn't available on your app instance, install it with 
+```
+sudo yum install nc
+```
+
+If you're experiencing connection errors, you need to review your security group and network ACL settings.
