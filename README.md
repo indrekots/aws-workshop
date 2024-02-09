@@ -205,83 +205,30 @@ There's no need to define a matching outbound rule.
 Also, SGs don't have deny rules.
 
 In AWS VPC dashboard, select *Security Groups*.
-We're going to create four security groups.
-The first one is going to be used for the bastion host.
-Second and third groups are going to house app and DB servers respectively.
-The fourth one is going to be used by Elastic Load Balancer.
+We're going to create three security groups.
+The first two are going to house app and DB servers.
+The third one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
-### 7.1 Bastion host security group
-
-Create a security group that's responsible for the bastion host.
-Name it `<your-name>-dmz-sg`.
-Edit its inbound rules to only allow access to port 22 (SSH) from all sources.
-
-![List of security group rules for DMZ group](sg-rules.png)
-
-### 7.2 App server security group
+### 7.1 App server security group
 
 Create a new security group for your app servers.
 Name it `<your-name>-app-sg`.
-For app servers, we want to allow SSH traffic (port 22) from bastion host security group and HTTP (port 80) traffic from all sources.
+For app servers, we want to allow HTTP (port 80) traffic from all sources.
 
-![List of security group rules for app group](app-sg-rules.png)
-
-### 7.3 DB server security group
+### 7.2 DB server security group
 
 Create a security group for DB servers.
 Name it `<your-name>-db-sg`.
-DB servers need to be accessed via SSH (port 22) from bastion host.
-We also want to make sure that app servers can connect to them on port 5432.
+Allow incoming traffic on port 5432.
 
-![List of security group rules for DB group](db-sg-rules.png)
-
-### 7.4 ELB security group
+### 7.3 ELB security group
 
 Finally, create a security group for a load balancer that we're going to create later.
 Name it `<your-name-lb-sg>`.
 Allow all incoming HTTP (port 80) traffic from all sources.
 
 ![List of security group rules for lb group](lb-sg-rules.png)
-
-## 8. Bastion host
-
-In AWS EC2 dashboard, launch a new instance for the bastion host.
-A bastion host is an EC2 instance in a public subnet that's used as a _point of entry_ to access EC2 instances in private subnets.
-
-> [!NOTE]  
-> A bastion host, also known as a jump host, is a specially configured and secured server that is positioned on the perimeter of a network, often within a Demilitarized Zone (DMZ).
-> The primary purpose of a bastion host is to provide secure access to internal network resources from external networks, such as the internet.
-
-Pick Amazon Linux AMI 2018.03.0 AMI and `t2.micro` as the instance type (it's free tier eligible).
-Then click *Configure Instance Details*.
-Place the instance in your VPC and select your `dmz-1` subnet.
-Also, enable auto-assignment of public IP.
-Leave all other options as is.
-Click *next* until it's time to configure a security group.
-Pick your `dmz-sg` for the security group.
-Finally, review and launch the instance.
-
-AWS will ask you to pick a key pair that's used to access the instance.
-Crate a new key pair, add a name and then download it.
-A `*.pem` file will be downloaded.
-You're going to use that later to SSH into the bastion host.
-Once that's done, launch the instance.
-It will take a bit of time for the instance to be ready.
-
-Once ready, in EC2 dashboard, list your instances and connect to your bastion host by clicking *Connect*.
-You'll see instructions on how to SSH into the bastion host using the `pem` file you downloaded previously.
-If security groups and network access control lists have been configured correctly, you should be able to successfully establish an SSH session.
-
-```
-      __|  __|_  )
-      _|  (     /   Amazon Linux AMI
-      ___|\___|___|
-
-https://aws.amazon.com/amazon-linux-ami/2018.03-release-notes/
-```
-
-If the connection hangs, it could be that there's an issue with NACLs or security groups.
 
 ## 9. Application servers
 
