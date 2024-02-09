@@ -86,7 +86,7 @@ Finally, associate route tables with subnets.
 Select `<your-name>-rt-igw` route table and edit its subnet associations.
 Associate it with both of your DMZ subnets.
 For `<your-name>-rt-ngw-1`, associate it with `app-1` and `db-1` subnets.
-`<your-name>-rt-ngw-2` should be associated with `app-2` and `db-2` subnets.
+`<your-name>-rt-ngw-2` should be associated with `app-2`, `db-2` and `db-3` subnets.
 
 ## 6. Network Access Control Lists (NACL)
 
