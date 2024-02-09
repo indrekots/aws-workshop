@@ -210,25 +210,23 @@ The first two are going to house app and DB servers.
 The third one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
-### 7.1 App server security group
+### 7.1 ELB security group
 
-Create a new security group for your app servers.
-Name it `<your-name>-app-sg`.
-For app servers, we want to allow HTTP (port 80) traffic from all sources.
-
-### 7.2 DB server security group
-
-Create a security group for DB servers.
-Name it `<your-name>-db-sg`.
-Allow incoming traffic on port 5432.
-
-### 7.3 ELB security group
-
-Finally, create a security group for a load balancer that we're going to create later.
+Create a security group for a load balancer that we're going to create later.
 Name it `<your-name-lb-sg>`.
 Allow all incoming HTTP (port 80) traffic from all sources.
 
-![List of security group rules for lb group](lb-sg-rules.png)
+### 7.2 App server security group
+
+Create a new security group for your app servers.
+Name it `<your-name>-app-sg`.
+For app servers, we want to allow HTTP (port 80) traffic from the ELB security group.
+
+### 7.3 DB server security group
+
+Create a security group for DB servers.
+Name it `<your-name>-db-sg`.
+Allow incoming traffic on port 5432 from the app security group.
 
 ## 9. Application servers
 
