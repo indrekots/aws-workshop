@@ -11,7 +11,7 @@ This workshop covers the following topics
 7. EC2 and creation of new instances
 8. Autoscaling groups
 9. Elastic Load Balancers
-10. RDS
+10. RDS Postgres
 
 The following is a high level architecture diagram of the end result we're going to build.
 
@@ -252,18 +252,19 @@ In the EC2 dashboard, select one of your app instances and click connect.
 Use Session Manager to connect to the EC2 instance.
 Then check whether the DB port is accessible from the app servers.
 
-```
+```bash
 nc -vz <enter DB server IP or host name> 5432
 ```
 
 A successful response would look something like the following
 
-```
+```bash
 Ncat: Connected to 10.10.6.43:5432.
 ```
 
 If `nc` isn't available on your app instance, install it with 
-```
+
+```bash
 sudo yum install nc
 ```
 
