@@ -142,7 +142,7 @@ The following section is about creating new EC2 instances that will be serving w
 [Launch template](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html) specifies EC2 instance configuration information.
 Auto scaling group will use it to create new EC2 instances.
 
-Create a new launch template.
+In the EC2 console, create a new launch template.
 Name it `<your-name>-lt`.
 Use Amazon Linux 2023 AMI and `t2.micro` as the instance type.
 Attach the `app` security group to the launch template.
