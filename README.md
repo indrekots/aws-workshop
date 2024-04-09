@@ -7,11 +7,11 @@ This workshop covers the following topics
 3. Subnets
 4. NAT Gateways
 5. Route Tables
-6. Network Access Control Lists
-7. Security Groups
-8. EC2 and creation of new instances
-9. Autoscaling groups
-10. Elastic Load Balancers
+6. Security Groups
+7. EC2 and creation of new instances
+8. Autoscaling groups
+9. Elastic Load Balancers
+10. RDS
 
 The following is a high level architecture diagram of the end result we're going to build.
 
@@ -43,6 +43,11 @@ Use a naming convention so that subnets are easily distinguishable (e.g. `<your-
 * created subnets should be in your newly created VPC
 * use your own scheme for allocating an IPv4 CIDR block for each subnet, e.g. `10.10.1.0/24` for `<your-name>-dmz-1` and `10.10.2.0/24` for `<your-name>-dmz-2`
 * create 2 subnets for DMZ, place them in different availability zones
+
+> [!NOTE]  
+> In networking, a DMZ, or Demilitarized Zone, refers to a segmented part of a network that is isolated and positioned between an organization's internal network (often referred to as the "trusted network") and an external network, typically the internet.
+> The purpose of a DMZ is to provide an additional layer of security by placing certain servers and services that require external access in a neutral zone with restricted connectivity.
+
 * create 2 subnets for applications, place them in different availability zones
 * create 3 subnets for databases, place them in different availability zones
 
@@ -88,116 +93,7 @@ Associate it with both of your DMZ subnets.
 For `<your-name>-rt-ngw-1`, associate it with `app-1` and `db-1` subnets.
 `<your-name>-rt-ngw-2` should be associated with `app-2`, `db-2` and `db-3` subnets.
 
-## 6. Network Access Control Lists (NACL)
-
-[Network access control lists](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html) are used to control inbound and outbound traffic on the subnet level.
-
-In AWS VPC dashboard, select *Network ACLs*.
-Create three Network Access Control Lists, one for each layer in the infrastructure architecture.
-Name them based on the subnet, e.g. `<your-name>-dmz-nacl`, `<your-name>-app-nacl` etc.
-Place them into your VPC.
-Associate NACLs with their respective subnets.
-For example, `<your-name>-dmz-nacl` should be associated with `<your-name>-dmz-1` and `<your-name>-dmz-2`.
-
-Inbound/outbound rules for NACLs are stateless.
-This means that for an inbound rule, a matching outbound rule must be created.
-Otherwise, traffic can only enter a subnet but can never exit it.
-Rules are evaluated in the *rule #* order.
-
-### 6.1 DMZ subnet NACL rules
-
-> [!NOTE]  
-> In networking, a DMZ, or Demilitarized Zone, refers to a segmented part of a network that is isolated and positioned between an organization's internal network (often referred to as the "trusted network") and an external network, typically the internet.
-> The purpose of a DMZ is to provide an additional layer of security by placing certain servers and services that require external access in a neutral zone with restricted connectivity.
-
-Edit inbound/outbound rules for the `dmz` NACL.
-The use cases we want to support are:
-
-* SSH access to bastion host
-* app server access to NAT Gateway so they could access the outside world
-* incoming HTTP traffic from elastic load balancer
-
-The following is a list of inbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Source        | Description                                                                              |
-|-----------------|----------|--------------|---------------|------------------------------------------------------------------------------------------|
-| SSH             | TCP      | 22           | 0.0.0.0/0     | Allow SSH access from any source. We want to access our bastion host via SSH             |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow client traffic to return                                                           |
-| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow incoming HTTP connections from ELB                                                 |
-| HTTPS           | TCP      | 443          | 10.10.21.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
-| HTTPS           | TCP      | 443          | 10.10.22.0/24 | Allow incoming HTTPS connections from application servers so they could install packages |
-| HTTPS           | TCP      | 443          | 10.10.31.0/24 | Allow incoming HTTPS connections from DB servers so they could install packages          |
-| HTTPS           | TCP      | 443          | 10.10.32.0/24 | Allow incoming HTTPS connections from DB servers so they could install packages          |
-
-The following is a list of outbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Destination   | Description                            |
-|-----------------|----------|--------------|---------------|----------------------------------------|
-| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow client return traffic            |
-| SSH             | TCP      | 22           | 10.10.21.0/24 | Allow SSH access to app servers        |
-| SSH             | TCP      | 22           | 10.10.22.0/24 | Allow SSH access to app servers        |
-| SSH             | TCP      | 22           | 10.10.31.0/24 | Allow SSH access to DB servers         |
-| SSH             | TCP      | 22           | 10.10.32.0/24 | Allow SSH access to DB servers         |
-| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow HTTP traffic to exit the subnet  |
-| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow HTTPS traffic to exit the subnet |
-
-### 6.2 App subnet NACL rules
-
-Edit inbound/outbound rules for the `app` NACL.
-The use cases we want to support are:
-
-* SSH access from bastion host
-* app server access to NAT Gateway so they could access the outside world and download packages
-* Incoming HTTP traffic from ELB via `dmz` subnet
-
-The following is a list of inbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Source       | Description                           |
-|-----------------|----------|--------------|--------------|---------------------------------------|
-| SSH             | TCP      | 22           | 10.10.1.0/24 | Allow SSH access from bastion host    |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0    | Allow returning HTTP/S traffic        |
-| HTTP            | TCP      | 80           | 10.10.1.0/24 | Allow incoming HTTP traffic from DMZ  |
-| HTTP            | TCP      | 80           | 10.10.2.0/24 | Allow HTTP traffic to exit the subnet |
-
-The following is a list of outbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Destination   | Description                                                            |
-|-----------------|----------|--------------|---------------|------------------------------------------------------------------------|
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24  | Allow client return traffic to DMZ                                     |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.2.0/24  | Allow client return traffic to DMZ                                     |
-| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow outbound HTTP traffic (needed to download updates and packages)  |
-| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow outbound HTTPS traffic (needed to download updates and packages) |
-| PostgreSQL      | TCP      | 5432         | 10.10.31.0/24 | Allow DB access to DB subnets                                          |
-| PostgreSQL      | TCP      | 5432         | 10.10.32.0/24 | Allow DB access to DB subnets                                          |
-
-### 6.3 DB subnet NACL rules
-
-For DB subnet, we want to support the following use cases.
-
-* SSH access to DB servers from `dmz` subnet
-* DB access from `app` subnet
-* DB server access to NAT Gateway so it could download updates and packages
-
-The following is a list of inbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Source        | Description                      |
-|-----------------|----------|--------------|---------------|----------------------------------|
-| SSH             | TCP      | 22           | 10.10.1.0/24  | Allow SSH traffic from DMZ       |
-| PostgreSQL      | TCP      | 5432         | 10.10.21.0/24 | Allow DB access from app subnets |
-| PostgreSQL      | TCP      | 5432         | 10.10.22.0/24 | Allow DB access from app subnets |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 0.0.0.0/0     | Allow returning HTTP/S traffic   |
-
-The following is a list of outbound allow rules with their purpose.
-
-| Type            | Protocol | Port Range   | Destination   | Description                                                                       |
-|-----------------|----------|--------------|---------------|-----------------------------------------------------------------------------------|
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.1.0/24  | Allow SSH traffic to return to DMZ                                                |
-| HTTPS           | TCP      | 443          | 0.0.0.0/0     | Allow HTTPS access to the outside world in order to download packages and updates |
-| HTTP            | TCP      | 80           | 0.0.0.0/0     | Allow HTTP access to the outside world in order to download packages and updates  |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.21.0/24 | Allow returning DB traffic to app servers                                         |
-| Custom TCP Rule | TCP      | 1024 - 65535 | 10.10.22.0/24 | Allow returning DB traffic to app servers                                         |
-
-## 7. Security Groups (SG)
+## 6. Security Groups (SG)
 
 [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) are used to control traffic on the instance level.
 Compared to NACLs, security group rules are stateful.
@@ -210,25 +106,25 @@ The first two are going to house app and DB servers.
 The third one is going to be used by Elastic Load Balancer.
 Name your security groups (e.g. `<your-name>-app-sg`), add a description and place them into your VPC.
 
-### 7.1 ELB security group
+### 6.1 ELB security group
 
 Create a security group for a load balancer that we're going to create later.
 Name it `<your-name-lb-sg>`.
 Allow all incoming HTTP (port 80) traffic from all sources.
 
-### 7.2 App server security group
+### 6.2 App server security group
 
 Create a new security group for your app servers.
 Name it `<your-name>-app-sg`.
 For app servers, we want to allow HTTP (port 80) traffic from the ELB security group.
 
-### 7.3 DB server security group
+### 6.3 DB server security group
 
 Create a security group for DB servers.
 Name it `<your-name>-db-sg`.
 Allow incoming traffic on port 5432 from the app security group.
 
-## 8. Application servers
+## 7. Application servers
 
 The following section is about creating new EC2 instances that will be serving web traffic.
 Before we're going to configure a launch template, we need to do some prep work.
