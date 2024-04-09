@@ -1,4 +1,5 @@
 ![AWS workshop cover image](cover.jpg "Image from https://aws.amazon.com/events/aws-handson-workshop-24/")
+---
 
 This workshop covers the following topics
 
