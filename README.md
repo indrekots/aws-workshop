@@ -134,7 +134,7 @@ The following section is about creating new EC2 instances that will be serving w
 > [!IMPORTANT]
 > Before we're going to configure a launch template, we need to do some prep work.
 > We need to configure AWS SSM Session Manager to have access to our EC2 instances.
-> This enables us to easily star a terminal session into a running EC2 instance.
+> This enables us to easily start a terminal session into a running EC2 instance.
 > [Follow the guide](https://blog.indrek.io/articles/access-ec2-instance-with-aws-ssm/) that talks about how to set up the required IAM role and how to configure `awscli`.
 
 ### 7.1 Launch Template
