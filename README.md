@@ -213,7 +213,7 @@ Tick the availability zones the public sunets were created in and select the sub
 
 In the security group section, select the existing `<your-name>-lb-sg` security group.
 
-In the listeners and rounting section, configure HTTP port 80 to be routed to the target group you created in the previous section.
+In the listeners and routing section, configure HTTP port 80 to be routed to the target group you created in the previous section.
 
 It takes a bit of time for the provisioning to finish.
 Meanwhile you can move onwards with the next steps.
