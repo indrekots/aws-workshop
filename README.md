@@ -62,9 +62,9 @@ The created subnets should be in your newly created VPC
 
 [A NAT gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) is a Network Address Translation (NAT) service.
 NAT gateways are used to enable instances in **private subnets** to initiate connections outside of your VPC while preventing inbound traffic from reaching those instances.
-NAT Gateway must be in a **public subnet**
+A NAT Gateway must be in a **public subnet**
 
-In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateway.
+In AWS VPC dashboard, select *NAT Gateways* menu option and create two new NAT Gateways.
 
 * place the first NAT gateway into `dmz-1` and the other one into `dmz-2` subnet
 * allocate a new elastic IP addresses for the NAT gateways
@@ -99,7 +99,7 @@ For `<your-name>-rt-ngw-1`, associate it with `app-1` and `db-1` subnets.
 ## 6. Security Groups (SG)
 
 [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) are used to control traffic on the instance level.
-Compared to NACLs, security group rules are stateful.
+Compared to [NACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html), security group rules are stateful.
 There's no need to define a matching outbound rule.
 Also, SGs don't have deny rules.
 
@@ -130,9 +130,12 @@ Allow incoming traffic on port 5432 from the app security group.
 ## 7. Application servers
 
 The following section is about creating new EC2 instances that will be serving web traffic.
-Before we're going to configure a launch template, we need to do some prep work.
-We need to configure AWS SSM Session Manager to have access to our EC2 instances.
-[Follow the guide](https://blog.indrek.io/articles/access-ec2-instance-with-aws-ssm/) that talks about how to set up the required IAM role and how to configure `awscli`.
+
+> [!IMPORTANT]
+> Before we're going to configure a launch template, we need to do some prep work.
+> We need to configure AWS SSM Session Manager to have access to our EC2 instances.
+> This enables us to easily star a terminal session into a running EC2 instance.
+> [Follow the guide](https://blog.indrek.io/articles/access-ec2-instance-with-aws-ssm/) that talks about how to set up the required IAM role and how to configure `awscli`.
 
 ### 7.1 Launch Template
 
