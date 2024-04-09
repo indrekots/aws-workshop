@@ -38,11 +38,13 @@ Attach it to your recently created VPC.
 
 [A subnet](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html) is a range of IP addresses in your VPC. You can create AWS resources, such as EC2 instances, in specific subnets.
 
-In AWS VPC dashboard, select subnet tab and create 7 subnets.
+In AWS VPC dashboard, select the subnet tab and create 7 subnets.
 Use a naming convention so that subnets are easily distinguishable (e.g. `<your-name>-app-1`).
+The created subnets should be in your newly created VPC
 
-* created subnets should be in your newly created VPC
-* use your own scheme for allocating an IPv4 CIDR block for each subnet, e.g. `10.10.1.0/24` for `<your-name>-dmz-1` and `10.10.2.0/24` for `<your-name>-dmz-2`
+> [!TIP]
+> Use your own scheme for allocating an IPv4 CIDR block for each subnet, e.g. `10.10.1.0/24` for `<your-name>-dmz-1` and `10.10.2.0/24` for `<your-name>-dmz-2`
+
 * create 2 subnets for DMZ, place them in different availability zones
 
 > [!NOTE]  
