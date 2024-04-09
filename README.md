@@ -256,6 +256,7 @@ Select create database and wait for the provisioning to finish.
 Let's simulate DB traffic from the app servers.
 In the EC2 dashboard, select one of your app instances and click connect.
 Use Session Manager to connect to the EC2 instance.
+Alternatively, you can [connect to the EC2 instance using `awscli`](https://blog.indrek.io/articles/access-ec2-instance-with-aws-ssm/#start-session-via-awscli).
 Then check whether the DB port is accessible from the app servers.
 
 ```bash
@@ -274,4 +275,5 @@ If `nc` isn't available on your app instance, install it with
 sudo yum install nc
 ```
 
-If you're experiencing connection errors, you need to review your security group and network ACL settings.
+If you're experiencing connection errors, you need to review your security group rules.
+There might be something on the network level that's preventing access.
