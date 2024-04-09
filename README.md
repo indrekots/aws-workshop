@@ -277,3 +277,7 @@ sudo yum install nc
 
 If you're experiencing connection errors, you need to review your security group rules.
 There might be something on the network level that's preventing access.
+
+## The End
+
+To end the workshop, delete all the resources you created to avoid unnecessary cost.
