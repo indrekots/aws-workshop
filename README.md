@@ -241,7 +241,7 @@ Add all of your `db` subnets to the group.
 Finally, create the group.
 
 Create a new database.
-Select standard create and choose Postgresql asn the engine type.
+Select standard create and choose Postgresql as the engine type.
 In Availability and durability, select Multi-AZ DB instance.
 Name your database `<your-name>-db`
 
